@@ -1,0 +1,22 @@
+{
+  "name": "synthetic-data",
+  "version": "0.1.0",
+  "description": "Generate synthetic datasets from schemas, real data, or LLM-driven personas. Tabular fit-and-sample (SDV-style), PII swap (Faker), LLM-assisted real-to-synth conversion, and quality/privacy evaluation.",
+  "author": {
+    "name": "Daniel Rosehill",
+    "email": "daniel@danielrosehill.co.il"
+  },
+  "homepage": "https://github.com/danielrosehill/Claude-Synthetic-Data-Plugin",
+  "repository": "https://github.com/danielrosehill/Claude-Synthetic-Data-Plugin",
+  "license": "MIT",
+  "keywords": [
+    "synthetic-data",
+    "data-generation",
+    "anonymisation",
+    "pii",
+    "tabular",
+    "llm",
+    "faker",
+    "sdv"
+  ]
+}
