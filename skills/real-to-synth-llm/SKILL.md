@@ -1,11 +1,11 @@
 ---
 name: real-to-synth-llm
-description: Transform real text records into synthetic counterparts that preserve semantics while changing specifics, using Claude.
+description: Transform real text records into synthetic counterparts that preserve semantics while changing specifics, with any LLM route.
 ---
 
 # Transform Real Text to Synthetic with LLM
 
-Convert real unstructured or semi-structured text records into synthetic counterparts that preserve semantic intent and structure while replacing all personally identifiable, datable, and location-specific details. Uses Claude to intelligently rewrite records with explicit "preserve / change" rules.
+Convert real unstructured or semi-structured text records into synthetic counterparts that preserve semantic intent and structure while replacing all personally identifiable, datable, and location-specific details. Uses an LLM to intelligently rewrite records with explicit "preserve / change" rules.
 
 ## When to use
 
@@ -26,10 +26,7 @@ Convert real unstructured or semi-structured text records into synthetic counter
 
 ## Procedure
 
-1. **Install Anthropic and dependencies:**
-   ```bash
-   pip install anthropic pandas tqdm numpy scikit-learn
-   ```
+1. **Dependencies** are inline in each script (`uv run --with scikit-learn --with numpy check_leakage.py`); no install step.
 
 2. **Draft a transformation prompt with explicit rules:**
    ```
@@ -48,100 +45,26 @@ Convert real unstructured or semi-structured text records into synthetic counter
    Return only valid JSON, no markdown.
    ```
 
-3. **Write a batch transformation script with progress and resume:**
+3. **Build jobs and run them on any route** (read the overlay `preferences.md` first for route, models, budget; see `generate-text-data`). One job per real record; the runner is resumable and vendor-agnostic:
    ```python
-   import json
-   import anthropic
+   # make_jobs.py  (run: uv run make_jobs.py real.jsonl > jobs.jsonl)
+   # /// script
+   # dependencies = ["pandas"]
+   # ///
+   import json, sys
    import pandas as pd
-   from pathlib import Path
-   import time
-   
-   def transform_records(input_path, output_path, record_type,
-                         preserve_rules, transform_fields, locale="en"):
-       client = anthropic.Anthropic()
-       
-       # Load real records
-       if input_path.endswith('.jsonl'):
-           with open(input_path) as f:
-               real_records = [json.loads(line) for line in f]
-       else:  # CSV
-           df = pd.read_csv(input_path)
-           real_records = df.to_dict(orient='records')
-       
-       # Track progress and resume if interrupted
-       completed = set()
-       if Path(output_path).exists():
-           with open(output_path) as f:
-               completed = {i for i, _ in enumerate(f)}
-       
-       synthetic_records = []
-       
-       for idx, real_record in enumerate(real_records):
-           if idx in completed:
-               continue
-           
-           record_json = json.dumps(real_record, indent=2)
-           
-           prompt = f"""Transform this {record_type} into a synthetic version:
-
-   {record_json}
-   
-   Rules:
-   - PRESERVE semantic intent, tone, structure, technical details
-   - PRESERVE: {preserve_rules}
-   - CHANGE ALL: names, locations, dates, emails, phone numbers, IDs, URLs
-   - CHANGE: specific quoted text and proper nouns
-   - MAINTAIN: approximate length and field schema
-   
-   Return ONLY valid JSON, no markdown or explanation."""
-           
-           try:
-               message = client.messages.create(
-                   model="claude-3-5-haiku-20241022",
-                   max_tokens=1000,
-                   messages=[{"role": "user", "content": prompt}]
-               )
-               
-               response_text = message.content[0].text.strip()
-               
-               # Strip markdown if present
-               if response_text.startswith('```'):
-                   response_text = response_text.split('```')[1].lstrip('json').strip()
-               
-               synthetic_record = json.loads(response_text)
-               
-               # Append to output (streaming write for resume capability)
-               with open(output_path, 'a') as f:
-                   f.write(json.dumps(synthetic_record) + '\n')
-               
-               synthetic_records.append(synthetic_record)
-               
-               if (idx + 1) % 10 == 0:
-                   print(f"Transformed {idx + 1}/{len(real_records)} records...")
-               
-               # Politeness: small delay between API calls
-               time.sleep(0.5)
-           
-           except json.JSONDecodeError as e:
-               print(f"Warning: JSON parse error on record {idx}: {e}")
-               continue
-           except anthropic.APIError as e:
-               print(f"API error on record {idx}: {e}")
-               time.sleep(2)
-               continue
-       
-       print(f"Transformed {len(synthetic_records)} records to {output_path}")
-       return synthetic_records
-   
-   if __name__ == '__main__':
-       transform_records(
-           input_path="real_tickets.jsonl",
-           output_path="synthetic_tickets.jsonl",
-           record_type="customer support ticket",
-           preserve_rules="priority level, issue category, technical complexity",
-           transform_fields=["customer_name", "body", "email"]
-       )
+   path = sys.argv[1]
+   rows = ([json.loads(l) for l in open(path)] if path.endswith(".jsonl")
+           else pd.read_csv(path).to_dict(orient="records"))
+   TEMPLATE = open("prompt.txt").read()   # the prompt from step 2 with {real_record_json}
+   for i, r in enumerate(rows):
+       print(json.dumps({"id": str(i), "prompt": TEMPLATE.replace("{real_record_json}", json.dumps(r, ensure_ascii=False))}))
    ```
+   ```bash
+   uv run "${CLAUDE_PLUGIN_ROOT}/scripts/llm_generate.py" jobs.jsonl --out synth_raw.jsonl \
+     --route <route> --models <model> --workers 4 --limit 10     # pilot, then drop --limit
+   ```
+   Parse each `output` as JSON (strip markdown fences), drop and count failures. Real data goes only to a route the user approves for it; for sensitive records prefer a local route (`--route ollama`).
 
 4. **Optional: QA check for leakage (flag records too similar to source):**
    ```python
@@ -187,8 +110,7 @@ Convert real unstructured or semi-structured text records into synthetic counter
 
 5. **Run transformation and QA:**
    ```bash
-   python transform_real_to_synth.py
-   python check_leakage.py  # Optional QA
+   uv run --with scikit-learn --with numpy check_leakage.py  # Optional QA
    ```
 
 ## Output / side effects
@@ -196,7 +118,7 @@ Convert real unstructured or semi-structured text records into synthetic counter
 - JSONL file with transformed synthetic records
 - Records match schema of real data but with anonymised content
 - Optional: QA report flagging records with residual similarity to source
-- API costs (~$0.01–0.05 per record with Haiku, depending on length)
+- API costs (small per record on a cheap model; estimate before a bulk run)
 
 ## Safety / constraints
 

@@ -26,8 +26,8 @@ A curated reference of open-source and cloud synthetic data tools. Use this skil
 - `TVAESynthesizer` — variational autoencoder, good balance of speed/fidelity
 - `HMASynthesizer` — multi-table, learns foreign-key relationships
 
-**Install:** `pip install sdv`  
-**Quality eval:** `pip install sdmetrics`
+**Install:** `uv run --with sdv script.py` (or `uv add sdv` in a project)  
+**Quality eval:** `uv run --with sdmetrics script.py` (or `uv add sdmetrics` in a project)
 
 ### Synthcity
 **What it does:** Plugin-based generative synthesis with support for differential privacy, fairness constraints, and time-series.
@@ -40,7 +40,7 @@ A curated reference of open-source and cloud synthetic data tools. Use this skil
 **Pros:** DP guarantees, plugin architecture, time-series module.  
 **Cons:** Steeper learning curve; fewer pre-packaged models than SDV.
 
-**Install:** `pip install synthcity`
+**Install:** `uv run --with synthcity script.py` (or `uv add synthcity` in a project)
 
 ### DataSynthesizer
 **What it does:** Differentially-private tabular synthesis using Gaussian copula or uniform sampling.
@@ -53,7 +53,7 @@ A curated reference of open-source and cloud synthetic data tools. Use this skil
 **Pros:** Formal privacy guarantees, simple API, fast.  
 **Cons:** Limited to DP copula approach; less flexible than SDV.
 
-**Install:** `pip install DataSynthesizer`
+**Install:** `uv run --with DataSynthesizer script.py` (or `uv add DataSynthesizer` in a project)
 
 ### ydata-synthetic
 **What it does:** GAN-based tabular and time-series synthesis.
@@ -65,7 +65,7 @@ A curated reference of open-source and cloud synthetic data tools. Use this skil
 **Pros:** Strong empirical fidelity; time-series support.  
 **Cons:** Training can be unstable; hyperparameter-sensitive.
 
-**Install:** `pip install ydata-synthetic`
+**Install:** `uv run --with ydata-synthetic script.py` (or `uv add ydata-synthetic` in a project)
 
 ## Field-level (record-wise) generation
 
@@ -81,7 +81,7 @@ A curated reference of open-source and cloud synthetic data tools. Use this skil
 **Pros:** Simple, fast, extremely customizable, 50+ locales.  
 **Cons:** No correlation learning; purely random per-field.
 
-**Install:** `pip install faker`
+**Install:** `uv run --with faker script.py` (or `uv add faker` in a project)
 
 **Example:**
 ```python
@@ -100,7 +100,7 @@ print(fake.name(), fake.email(), fake.phone_number())
 **Pros:** Compact, fast, good geographic support.  
 **Cons:** Smaller ecosystem than Faker.
 
-**Install:** `pip install mimesis`
+**Install:** `uv run --with mimesis script.py` (or `uv add mimesis` in a project)
 
 ## Time-series
 
@@ -130,27 +130,18 @@ print(fake.name(), fake.email(), fake.phone_number())
 
 ## Unstructured/Text
 
-### Claude API (LLM-driven)
-**What it does:** Use Claude to generate or transform text records based on prompts describing persona, tone, intent, schema.
+### LLM APIs (vendor-agnostic)
+**What it does:** Any chat model (OpenRouter or another OpenAI-compatible API, Anthropic, Gemini, or a local Ollama, vLLM or llama.cpp server) generates or transforms text from prompts describing persona, tone, intent and schema.
 
 **When to use:**  
-- Synthetic text (support tickets, reviews, medical notes, chat logs)
+- Synthetic text (tickets, reviews, notes, chat logs, instruction pairs, read-aloud sentences, personas)
 - Real-to-synthetic transformation (change specifics, preserve semantics)
-- High-quality, semantically coherent output preferred over speed
+- Semantic coherence preferred over speed
 
 **Pros:** Flexible, human-readable output, custom logic via prompts.  
-**Cons:** API costs; slower than generative models; requires API key.
+**Cons:** API cost; needs a key (or a local model); collapses to "typical" content unless seeded.
 
-**Install:** `pip install anthropic`
-
-### GPT / OpenAI API
-**What it does:** Similar to Claude but via OpenAI models.
-
-**When to use:**  
-- Text generation when GPT models preferred
-- Batch operations via OpenAI batch API
-
-**Install:** `pip install openai`
+**Use:** this plugin's `scripts/llm_generate.py` (httpx only, any route, resumable) via `generate-text-data`. Batch APIs are a cheaper async option on some routes.
 
 ## Cloud / Fully-managed
 
@@ -165,7 +156,7 @@ print(fake.name(), fake.email(), fake.phone_number())
 **Pros:** Managed service, no local compute, audit trail.  
 **Cons:** Costs; data leaves local network.
 
-**Install:** `pip install gretel-client`
+**Install:** `uv run --with gretel-client script.py` (or `uv add gretel-client` in a project)
 
 ## Choosing a tool
 
@@ -177,11 +168,11 @@ print(fake.name(), fake.email(), fake.phone_number())
 | Multi-table relational | SDV (HMA) | Synthcity with custom |
 | Schema-based tabular (fake) | Faker + Mimesis | custom generation |
 | PII replacement on real data | Faker + deterministic mapping | ydata-synthetic (PII aware) |
-| Synthetic text records | Claude/GPT API | ydata-synthetic (text models) |
-| Real text → synthetic (paraphrase) | Claude/GPT API with prompts | fine-tuned LLMs |
+| Synthetic text records | LLM API (`generate-text-data`) | ydata-synthetic (text models) |
+| Real text → synthetic (paraphrase) | LLM API with prompts | fine-tuned LLMs |
 | Time-series forecasting | Chronos | SDV (multivariate time) |
 | Time-series GAN-based | TimeGAN, ydata-synthetic | SDV (univariate) |
 
 ---
 
-**Next:** Choose your use case, then refer to the appropriate skill (`tabular-from-schema`, `tabular-from-real`, `text-records-llm`, etc.) for step-by-step execution.
+**Next:** Choose your use case, then refer to the appropriate skill (`tabular-from-schema`, `tabular-from-real`, `generate-text-data`, etc.) for step-by-step execution.

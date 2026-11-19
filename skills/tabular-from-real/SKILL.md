@@ -23,10 +23,7 @@ Learn a probabilistic model from a real dataset, then sample synthetic rows that
 
 ## Procedure
 
-1. **Install SDV and SDMetrics:**
-   ```bash
-   pip install sdv sdmetrics
-   ```
+1. **Dependencies:** run scripts with `uv run --with sdv --with sdmetrics script.py` (or inline `# /// script` dependencies).
 
 2. **Load real data and detect metadata:**
    ```python

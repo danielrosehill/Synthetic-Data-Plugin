@@ -25,10 +25,7 @@ Run comprehensive diagnostics on a synthetic dataset against a real source datas
 
 ### For Tabular Data
 
-1. **Install SDMetrics:**
-   ```bash
-   pip install sdmetrics
-   ```
+1. **Dependencies:** `uv run --with sdmetrics --with pandas script.py`.
 
 2. **Run fidelity and diagnostic reports:**
    ```python
@@ -136,10 +133,7 @@ Compare Pearson correlations between real and synthetic data.
 
 ### For Text Records (LLM-generated)
 
-1. **Install embedding tools:**
-   ```bash
-   pip install sentence-transformers umap-learn scikit-learn matplotlib
-   ```
+1. **Dependencies:** `uv run --with sentence-transformers --with umap-learn --with scikit-learn --with matplotlib script.py` (embedding models run on CPU or a GPU box; for large sets use a hosted embedding API rather than a laptop). For quick wording-overlap and near-duplicate numbers on text, `check-diversity` is enough.
 
 2. **Run embedding distribution and leakage checks:**
    ```python

@@ -23,10 +23,7 @@ Anonymise a real dataset in place by replacing specified PII columns (name, emai
 
 ## Procedure
 
-1. **Install Faker:**
-   ```bash
-   pip install faker
-   ```
+1. **Dependencies:** run with `uv run --with faker --with pandas replace_pii.py`.
 
 2. **Write a PII replacement script:**
    ```python
@@ -95,7 +92,7 @@ Anonymise a real dataset in place by replacing specified PII columns (name, emai
 
 3. **Run the script:**
    ```bash
-   python replace_pii.py
+   uv run --with faker --with pandas replace_pii.py
    ```
 
 4. **Verify output:**

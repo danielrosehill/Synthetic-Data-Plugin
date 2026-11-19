@@ -118,7 +118,7 @@ Build a synthetic dataset from scratch using a user-supplied schema. Each column
 
 3. **Run the script:**
    ```bash
-   python generate_from_schema.py
+   uv run --with faker --with mimesis --with pandas --with numpy generate_from_schema.py
    ```
 
 4. **Verify output:**
