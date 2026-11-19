@@ -4,7 +4,7 @@
   "description": "General-purpose synthetic data generation: varied LLM-written text (training pairs, eval inputs, personas, records, read-aloud sentences) on any model route, plus tabular fit-and-sample, schema generation, PII swap, real-to-synthetic conversion, diversity and quality checks. Private preferences live in a user-data overlay.",
   "author": {
     "name": "Daniel Rosehill",
-    "email": "daniel@danielrosehill.co.il"
+    "email": "public@danielrosehill.com"
   },
   "homepage": "https://github.com/danielrosehill/Synthetic-Data-Plugin",
   "repository": "https://github.com/danielrosehill/Synthetic-Data-Plugin",
